@@ -32,6 +32,7 @@ public class Message {
     public String get_data(){return this.data;}
     public String get_source(){return this.source;}
     public Constants get_intent(){return this.intent;}
+    public ValPair[] getValset(){return this.valset;}
 
 
 }

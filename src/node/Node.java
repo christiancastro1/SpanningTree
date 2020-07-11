@@ -61,13 +61,6 @@ public class Node {
             }
 
         }
-
-
-
-
-
-
-
     }
     public  void send_msg(Message message, String destination) throws IOException {
         try {   // try to create a connection with another process by sending a message
@@ -96,9 +89,12 @@ public class Node {
             System.out.println("The message is " + msg.get_data());
             s.close();
 
-            // switch to see what type of messsage it is
-            // send_go
-            // send_back
+            switch (msg.get_intent()){
+                case SEND_GO -> this.Go(msg);
+                case SEND_BACK -> this.Back(msg);
+            }
+
+
 
         } catch (IOException| ClassNotFoundException e) {
             e.printStackTrace();
@@ -131,6 +127,24 @@ public class Node {
             this.send_msg(msgout,  msg.get_source());
         }
 
+    }
+    public void Back(Message msg) throws IOException {
+        this.expected_msg -=1;
+
+        if (msg.getValset() != null) {
+            this.children.put(msg.get_source(),true);
+
+            for(ValPair pair: msg.getValset()){
+                int index = this.valset.length+1;
+                this.valset[index] = pair;
+            }
+        }
+        if (this.expected_msg == 0){
+            if(!this.port.equals(this.parent)){
+                Message msgout = new Message(this.port, Constants.SEND_BACK, this.valset);
+                this.send_msg(msgout, this.parent);
+            }
+        }
     }
 
 }
