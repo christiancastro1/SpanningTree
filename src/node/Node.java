@@ -64,7 +64,7 @@ public class Node {
     }
     public  void send_msg(Message message, String destination) throws IOException {
         try {   // try to create a connection with another process by sending a message
-            Socket socket = new Socket(this.ip, Integer.parseInt(destination));
+            Socket socket = new Socket("localhost", Integer.parseInt(destination));
             ObjectOutput outputStream =new ObjectOutputStream(socket.getOutputStream());
             outputStream.writeObject(message);
 
@@ -78,10 +78,19 @@ public class Node {
 
 
     }
+    /*
+    * Nodes will all be listening to request to receive data.
+    * Once another nodes is able to connect to the server socket
+    * it will send the message to the specified node on a specific port.
+    * It will receive an instance of a Message.
+    * */
     public void lisen_on_port() throws IOException {
         try{
-            Socket s = new Socket(this.ip, Integer.parseInt(this.port));
+            //Socket s = new Socket(this.ip, Integer.parseInt(this.port));
+            ServerSocket serverSocket = new ServerSocket(Integer.parseInt(this.port));
             System.out.println("Starting node on " + this.ip + " "+ this.port);
+            Socket s=serverSocket.accept();
+            System.out.println("Client connected"); //remove after
             ObjectInputStream objectInputStream = new ObjectInputStream(s.getInputStream());
 
             Message msg = (Message) objectInputStream.readObject();
@@ -89,15 +98,15 @@ public class Node {
             System.out.println("The message is " + msg.get_data());
             s.close();
 
-            switch (msg.get_intent()){
-                case SEND_GO -> this.Go(msg);
-                case SEND_BACK -> this.Back(msg);
+            if(msg.get_intent() == Constants.SEND_GO){
+                this.Go(msg);
             }
-
-
-
+            else if(msg.get_intent() == Constants.SEND_BACK){
+                this.Back(msg);
+            }
         } catch (IOException| ClassNotFoundException e) {
             e.printStackTrace();
+            System.out.print("Error connecting ...");
         }
 
     }
